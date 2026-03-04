@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Интерактивная сказка-открытка</title>
+    <style>
+        /* ===== БАЗОВЫЕ СТИЛИ ===== */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+        /* Фоновое изображение */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: url('https://evsumarokov.github.io/TIM_Junirs/Фон.png') no-repeat center center fixed;
+            background-size: cover;
+            opacity: 0.4;
+            z-index: -2;
+        }
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            z-index: -1;
+        }
+        /* ===== СТАРТОВЫЙ ЭКРАН ===== */
+        .start-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: flex; justify-content: center; align-items: center;
+            z-index: 3000; backdrop-filter: blur(10px);
+            transition: opacity 0.5s ease;
+        }
+        .start-content { text-align: center; animation: fadeInUp 1s ease; }
+        .start-content h1 {
+            color: white; font-size: 3.5em; margin-bottom: 40px;
+            text-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+        @keyframes glow {
+            from { text-shadow: 0 0 10px #fff, 0 0 20px #fff, 0 0 30px #667eea; }
+            to { text-shadow: 0 0 20px #fff, 0 0 30px #764ba2, 0 0 40px #764ba2; }
+        }
+        .start-button {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border: none; padding: 30px 60px; border-radius: 60px;
+            cursor: pointer; box-shadow: 0 10px 40px rgba(245, 87, 108, 0.4);
+            transition: all 0.3s ease; display: inline-block;
+        }
+        .start-button:hover { transform: translateY(-5px) scale(1.05); box-shadow: 0 15px 50px rgba(245, 87, 108, 0.6); }
+        .btn-text { display: block; color: white; font-size: 28px; font-weight: bold; margin-bottom: 10px; }
+        .btn-subtext { display: block; color: rgba(255, 255, 255, 0.9); font-size: 16px; }
+        /* ===== КОНТРОЛЫ ===== */
+        .controls {
+            position: fixed; top: 20px; right: 20px;
+            display: flex; gap: 15px; z-index: 1000;
+            animation: fadeInRight 0.5s ease;
+        }
+        .control-btn {
+            background: rgba(255, 255, 255, 0.95); border: none;
+            padding: 15px 25px; border-radius: 50px; cursor: pointer;
+            display: flex; align-items: center; gap: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2); transition: all 0.3s ease;
+            font-size: 16px; font-weight: 600;
+        }
+        .control-btn:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0,0,0,0.3); background: white; }
+        .control-btn.playing { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; animation: pulse 1.5s infinite; }
+        .icon { font-size: 20px; }
+        /* ===== ОСНОВНОЙ КОНТЕЙНЕР ===== */
+        .main-container {
+            max-width: 1400px; margin: 0 auto; padding: 120px 20px 40px;
+            animation: fadeIn 1s ease;
+        }
+        /* ===== ЗАГОЛОВОК ===== */
+        .header { text-align: center; margin-bottom: 50px; animation: fadeInDown 1s ease; }
+        .title { color: white; font-size: 3.5em; margin-bottom: 15px; text-shadow: 0 4px 15px rgba(0,0,0,0.5); font-weight: 700; }
+        .subtitle { color: rgba(255, 255, 255, 0.9); font-size: 1.3em; font-weight: 300; }
+        /* ===== СЕКЦИИ ===== */
+        .section {
+            background: rgba(255, 255, 255, 0.95); border-radius: 30px;
+            padding: 40px; margin-bottom: 40px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2); animation: fadeInUp 0.8s ease;
+        }
+        .section-title {
+            font-size: 2.2em; color: #333; margin-bottom: 30px;
+            text-align: center; font-weight: 700; position: relative; padding-bottom: 15px;
+        }
+        .section-title::after {
+            content: ''; position: absolute; bottom: 0; left: 50%;
+            transform: translateX(-50%); width: 100px; height: 4px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 2px;
+        }
+        /* ===== СЕТКА ЭЛЕМЕНТОВ ===== */
+        .items-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 25px; }
+        /* ===== КАРТОЧКИ ===== */
+        .item-card {
+            background: white; border-radius: 20px; overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1); transition: all 0.3s ease;
+            cursor: pointer; position: relative;
+        }
+        .item-card:hover { transform: translateY(-10px); box-shadow: 0 15px 40px rgba(0,0,0,0.2); }
+        .item-card.playing { box-shadow: 0 0 0 4px #f5576c, 0 10px 40px rgba(245, 87, 108, 0.4); animation: cardPulse 1s infinite; }
+        @keyframes cardPulse { 0%, 100% { transform: translateY(-10px) scale(1); } 50% { transform: translateY(-10px) scale(1.02); } }
+        .image-wrapper { position: relative; width: 100%; padding-bottom: 100%; overflow: hidden; }
+        .image-wrapper img {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            object-fit: cover; transition: transform 0.3s ease;
+        }
+        .item-card:hover .image-wrapper img { transform: scale(1.1); }
+        .play-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.4); display: flex;
+            justify-content: center; align-items: center;
+            opacity: 0; transition: opacity 0.3s ease;
+        }
+        .item-card:hover .play-overlay { opacity: 1; }
+        .play-icon { font-size: 60px; color: white; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.3)); }
+        .card-label {
+            padding: 15px; text-align: center; font-size: 1.2em;
+            font-weight: 600; color: #333;
+            background: linear-gradient(to bottom, #fff 0%, #f8f9fa 100%);
+        }
+        .location-card .card-label { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+        .character-card .card-label { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; }
+        /* ===== СКАЗКА ===== */
+        .story-container {
+            background: linear-gradient(135deg, #fff5f5 0%, #fff9e6 100%);
+            border-radius: 20px; padding: 30px; border: 3px solid rgba(102, 126, 234, 0.2);
+        }
+        .story-content {
+            max-height: 500px; overflow-y: auto; padding: 20px;
+            line-height: 1.8; font-size: 17px; color: #444;
+        }
+        .story-content h3 { color: #667eea; margin: 25px 0 15px; font-size: 1.5em; font-weight: 700; }
+        .story-content p { margin-bottom: 15px; text-align: justify; }
+        .story-end { text-align: center; font-size: 1.4em; font-weight: bold; color: #764ba2; margin-top: 30px; font-style: italic; }
+        /* Скроллбар */
+        .story-content::-webkit-scrollbar { width: 12px; }
+        .story-content::-webkit-scrollbar-track { background: rgba(102, 126, 234, 0.1); border-radius: 10px; }
+        .story-content::-webkit-scrollbar-thumb { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 10px; border: 3px solid rgba(255, 255, 255, 0.3); }
+        /* ===== ФУТЕР ===== */
+        .footer { text-align: center; padding: 30px; color: rgba(255, 255, 255, 0.8); font-size: 1.1em; }
+        /* ===== АНИМАЦИИ ===== */
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes fadeInDown { from { opacity: 0; transform: translateY(-30px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeInRight { from { opacity: 0; transform: translateX(30px); } to { opacity: 1; transform: translateX(0); } }
+        @keyframes pulse { 0%, 100% { transform: translateY(-3px) scale(1); } 50% { transform: translateY(-3px) scale(1.05); } }
+        /* ===== АДАПТИВНОСТЬ ===== */
+        @media (max-width: 768px) {
+            .start-content h1 { font-size: 2.2em; }
+            .start-button { padding: 20px 40px; }
+            .btn-text { font-size: 22px; }
+            .title { font-size: 2.2em; }
+            .section { padding: 25px; }
+            .section-title { font-size: 1.7em; }
+            .items-grid { grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 15px; }
+            .controls { top: 10px; right: 10px; }
+            .control-btn { padding: 10px 15px; font-size: 14px; }
+            .icon { font-size: 16px; }
+            .label { display: none; }
+            .story-content { max-height: 350px; font-size: 15px; }
+        }
+        @media (max-width: 480px) { .items-grid { grid-template-columns: 1fr; } .title { font-size: 1.8em; } }
+    </style>
+</head>
+<body>
+
+    <!-- Стартовый экран -->
+    <div class="start-screen" id="startScreen">
+        <div class="start-content">
+            <h1>🎭 Интерактивная сказка</h1>
+            <button class="start-button" id="startButton">
+                <span class="btn-text">Открыть сказку</span>
+                <span class="btn-subtext">Нажмите для начала</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Кнопки управления -->
+    <div class="controls" id="controls" style="display: none;">
+        <button class="control-btn music-btn" id="musicToggle" title="Фоновая музыка">
+            <span class="icon">🎵</span>
+            <span class="label">Музыка</span>
+        </button>
+        <button class="control-btn dialog-btn" id="dialogBtn" data-audio="https://evsumarokov.github.io/TIM_Junirs/Диалог.mp3">
+            <span class="icon">💬</span>
+            <span class="label">Диалог</span>
+        </button>
+    </div>
+
+    <!-- Основной контент -->
+    <div class="main-container" id="mainContainer" style="display: none;">
+        
+        <header class="header">
+            <h1 class="title">✨ Волшебная история ✨</h1>
+            <p class="subtitle">Нажмите на картинку, чтобы услышать историю</p>
+        </header>
+
+        <!-- Секция локаций -->
+        <section class="section locations-section">
+            <h2 class="section-title">🏰 Локации</h2>
+            <div class="items-grid">
+                <div class="item-card location-card" data-audio="https://evsumarokov.github.io/TIM_Junirs/л1.mp3">
+                    <div class="image-wrapper">
+                        <img src="https://evsumarokov.github.io/TIM_Junirs/л1.png" alt="Локация 1">
+                        <div class="play-overlay"><span class="play-icon">▶️</span></div>
+                    </div>
+                    <div class="card-label">Локация 1</div>
+                </div>
+                <div class="item-card location-card" data-audio="https://evsumarokov.github.io/TIM_Junirs/л2.mp3">
+                    <div class="image-wrapper">
+                        <img src="https://evsumarokov.github.io/TIM_Junirs/л2.png" alt="Локация 2">
+                        <div class="play-overlay"><span class="play-icon">▶️</span></div>
+                    </div>
+                    <div class="card-label">Локация 2</div>
+                </div>
+                <div class="item-card location-card" data-audio="https://evsumarokov.github.io/TIM_Junirs/л3.mp3">
+                    <div class="image-wrapper">
+                        <img src="https://evsumarokov.github.io/TIM_Junirs/л3.png" alt="Локация 3">
+                        <div class="play-overlay"><span class="play-icon">▶️</span></div>
+                    </div>
+                    <div class="card-label">Локация 3</div>
+                </div>
+                <div class="item-card location-card" data-audio="https://evsumarokov.github.io/TIM_Junirs/л5.mp3">
+                    <div class="image-wrapper">
+                        <img src="https://evsumarokov.github.io/TIM_Junirs/л5.png" alt="Локация 4">
+                        <div class="play-overlay"><span class="play-icon">▶️</span></div>
+                    </div>
+                    <div class="card-label">Локация 4</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Секция персонажей -->
+        <section class="section characters-section">
+            <h2 class="section-title">👥 Персонажи</h2>
+            <div class="items-grid">
+                <div class="item-card character-card" data-audio="https://evsumarokov.github.io/TIM_Junirs/п1.mp3">
+                    <div class="image-wrapper">
+                        <img src="https://evsumarokov.github.io/TIM_Junirs/п1.png" alt="Персонаж 1">
+                        <div class="play-overlay"><span class="play-icon">▶️</span></div>
+                    </div>
+                    <div class="card-label">Герой 1</div>
+                </div>
+                <div class="item-card character-card" data-audio="https://evsumarokov.github.io/TIM_Junirs/п2.mp3">
+                    <div class="image-wrapper">
+                        <img src="https://evsumarokov.github.io/TIM_Junirs/п2.png" alt="Персонаж 2">
+                        <div class="play-overlay"><span class="play-icon">▶️</span></div>
+                    </div>
+                    <div class="card-label">Герой 2</div>
+                </div>
+                <div class="item-card character-card" data-audio="https://evsumarokov.github.io/TIM_Junirs/п3.mp3">
+                    <div class="image-wrapper">
+                        <img src="https://evsumarokov.github.io/TIM_Junirs/п3.png" alt="Персонаж 3">
+                        <div class="play-overlay"><span class="play-icon">▶️</span></div>
+                    </div>
+                    <div class="card-label">Герой 3</div>
+                </div>
+                <div class="item-card character-card" data-audio="https://evsumarokov.github.io/TIM_Junirs/п4.mp3">
+                    <div class="image-wrapper">
+                        <img src="https://evsumarokov.github.io/TIM_Junirs/п4.png" alt="Персонаж 4">
+                        <div class="play-overlay"><span class="play-icon">▶️</span></div>
+                    </div>
+                    <div class="card-label">Герой 4</div>
+                </div>
+                <div class="item-card character-card" data-audio="https://evsumarokov.github.io/TIM_Junirs/п5.mp3">
+                    <div class="image-wrapper">
+                        <img src="https://evsumarokov.github.io/TIM_Junirs/п5.png" alt="Персонаж 5">
+                        <div class="play-overlay"><span class="play-icon">▶️</span></div>
+                    </div>
+                    <div class="card-label">Герой 5</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Секция сказки -->
+        <section class="section story-section">
+            <h2 class="section-title">📖 Текст сказки</h2>
+            <div class="story-container">
+                <div class="story-content">
+                    <h3>Глава 1: Начало пути</h3>
+                    <p>Жили-были в некотором царстве, в некотором государстве... Здесь начинается наша удивительная история о приключениях и волшебстве.</p>
+                    <h3>Глава 2: Встреча с героями</h3>
+                    <p>На своём пути путешественник встретил замечательных персонажей, каждый из которых сыграл важную роль в этой истории.</p>
+                    <h3>Глава 3: Испытания</h3>
+                    <p>Героям предстояло пройти через множество испытаний, посетить удивительные локации и раскрыть тайны древнего мира.</p>
+                    <h3>Глава 4: Развязка</h3>
+                    <p>В конце концов, все загадки были разгаданы, а герои нашли то, что искали. Но это ещё не конец...</p>
+                    <h3>Эпилог</h3>
+                    <p>И жили они долго и счастливо, а эта сказка ещё долго передавалась из поколения в поколение.</p>
+                    <p class="story-end">✦ Конец ✦</p>
+                </div>
+            </div>
+        </section>
+
+        <footer class="footer">
+            <p>🎨 Интерактивная сказка-открытка</p>
+        </footer>
+    </div>
+
+    <script>
+        // ===== ИНИЦИАЛИЗАЦИЯ =====
+        let bgMusic = new Audio('https://evsumarokov.github.io/TIM_Junirs/Фон.mp3');
+        bgMusic.loop = true;
+        bgMusic.volume = 0.4;
+
+        let currentAudio = null;
+        let isMusicPlaying = false;
+
+        const startScreen = document.getElementById('startScreen');
+        const startButton = document.getElementById('startButton');
+        const controls = document.getElementById('controls');
+        const mainContainer = document.getElementById('mainContainer');
+        const musicToggle = document.getElementById('musicToggle');
+        const dialogBtn = document.getElementById('dialogBtn');
+
+        // ===== СТАРТОВОЕ ВОСПРОИЗВЕДЕНИЕ =====
+        startButton.addEventListener('click', function() {
+            startScreen.style.opacity = '0';
+            setTimeout(() => { startScreen.style.display = 'none'; }, 500);
+            controls.style.display = 'flex';
+            mainContainer.style.display = 'block';
+            bgMusic.play().then(() => {
+                isMusicPlaying = true;
+                musicToggle.classList.add('playing');
+            }).catch(e => { console.log('Autoplay prevented:', e); });
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+
+        // ===== УПРАВЛЕНИЕ ФОНОВОЙ МУЗЫКОЙ =====
+        musicToggle.addEventListener('click', function() {
+            if (isMusicPlaying) {
+                bgMusic.pause();
+                this.classList.remove('playing');
+                this.querySelector('.icon').textContent = '🔇';
+            } else {
+                bgMusic.play();
+                this.classList.add('playing');
+                this.querySelector('.icon').textContent = '🎵';
+            }
+            isMusicPlaying = !isMusicPlaying;
+        });
+
+        // ===== ВОСПРОИЗВЕДЕНИЕ ДИАЛОГА =====
+        dialogBtn.addEventListener('click', function() {
+            const audioSrc = this.getAttribute('data-audio');
+            playAudio(audioSrc, this);
+        });
+
+        // ===== КЛИК ПО КАРТОЧКАМ =====
+        document.querySelectorAll('.item-card').forEach(card => {
+            card.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const audioSrc = this.getAttribute('data-audio');
+                playAudio(audioSrc, this);
+            });
+        });
+
+        // ===== ФУНКЦИЯ ВОСПРОИЗВЕДЕНИЯ АУДИО =====
+        function playAudio(src, element) {
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio.currentTime = 0;
+                currentAudio = null;
+            }
+            document.querySelectorAll('.item-card, .control-btn').forEach(el => {
+                if (el !== musicToggle) { el.classList.remove('playing'); }
+            });
+            currentAudio = new Audio(src);
+            currentAudio.volume = 0.8;
+            currentAudio.play().then(() => {
+                element.classList.add('playing');
+                if (element.classList.contains('dialog-btn')) { element.querySelector('.icon').textContent = '⏹️'; }
+            }).catch(e => { console.error('Error playing audio:', e); });
+            currentAudio.addEventListener('ended', function() {
+                element.classList.remove('playing');
+                currentAudio = null;
+                if (element.classList.contains('dialog-btn')) { element.querySelector('.icon').textContent = '💬'; }
+            });
+            currentAudio.addEventListener('error', function(e) {
+                console.error('Audio error:', e);
+                element.classList.remove('playing');
+            });
+        }
+    </script>
+</body>
+</html>
