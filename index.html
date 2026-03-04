@@ -3,227 +3,335 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Наша сказка</title>
+  <title>Волшебная книга</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@700&family=Playfair+Display:wght@700;800&family=Roboto+Serif:wght@400;500&display=swap" rel="stylesheet">
   <style>
-    /* === Глобальные сбросы и базовые стили === */
+    :root {
+      --gold: #d4af37;
+      --deep-blue: #1a252f;
+      --amber: #ffcc00;
+      --paper: #fdf9f2;
+      --shadow: rgba(0, 0, 0, 0.15);
+      --glow: 0 0 15px rgba(212, 175, 55, 0.6);
+    }
+
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
     }
 
-    html {
-      scroll-behavior: smooth;
-    }
-
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      line-height: 1.6;
-      color: #2c3e50;
-      background-color: #f8f9fa;
-      background-image: url('Фон.png');
-      background-size: cover;
-      background-position: center;
-      background-repeat: no-repeat;
-      background-attachment: fixed;
+      font-family: 'Roboto Serif', serif;
+      background: linear-gradient(135deg, #0c1445, #1a252f);
+      color: var(--deep-blue);
       min-height: 100vh;
-      padding: 2rem;
+      overflow-x: hidden;
+      position: relative;
     }
 
-    /* === Контейнер === */
+    /* Звёздное небо (фон) */
+    body::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: 
+        radial-gradient(circle at 10% 20%, rgba(255,255,255,0.3) 0%, transparent 20%),
+        radial-gradient(circle at 90% 80%, rgba(255,255,255,0.2) 0%, transparent 20%),
+        radial-gradient(circle at 50% 50%, rgba(255,255,255,0.1) 0%, transparent 30%);
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    /* Обложка книги */
+    .book-cover {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      background: url('Фон.png') center/cover no-repeat;
+      background-blend-mode: overlay;
+      opacity: 1;
+      transition: opacity 1.2s ease;
+    }
+
+    .book-cover.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .cover-title {
+      text-align: center;
+      color: white;
+      text-shadow: 0 4px 10px rgba(0,0,0,0.5);
+      font-family: 'Caveat', cursive;
+      font-size: 4.5rem;
+      letter-spacing: 3px;
+      animation: float 6s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-15px); }
+    }
+
+    /* Основной контейнер */
     .container {
       max-width: 1200px;
       margin: 0 auto;
-      padding: 0 1.5rem;
-    }
-
-    /* === Общие заголовки === */
-    h2 {
-      font-size: 2.25rem;
-      font-weight: 700;
-      text-align: center;
-      margin-bottom: 2rem;
-      color: #1a252f;
-      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      padding: 2rem;
       position: relative;
     }
 
-    h2::after {
-      content: '';
+    /* Боковая панель навигации */
+    .sidebar {
+      position: fixed;
+      top: 50%;
+      left: 20px;
+      transform: translateY(-50%);
+      z-index: 50;
+      display: flex;
+      flex-direction: column;
+      gap: 1.2rem;
+    }
+
+    .nav-btn {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.15);
+      border: 2px solid var(--gold);
+      color: white;
+      font-size: 1.8rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.4s ease;
+      box-shadow: var(--glow);
+      backdrop-filter: blur(10px);
+    }
+
+    .nav-btn:hover {
+      background: rgba(212, 175, 55, 0.3);
+      transform: scale(1.1);
+      box-shadow: 0 0 25px var(--gold);
+    }
+
+    .nav-btn.active {
+      background: var(--gold);
+      color: #1a252f;
+      transform: scale(1.2);
+      box-shadow: 0 0 30px rgba(212, 175, 55, 0.9);
+    }
+
+    /* Главный контент — страницы */
+    .pages {
+      min-height: 80vh;
+      background: var(--paper);
+      border-radius: 24px;
+      box-shadow: 0 20px 50px var(--shadow);
+      overflow: hidden;
+      position: relative;
+      padding: 2rem;
+      margin-left: 100px;
+      transition: transform 0.6s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+    }
+
+    .page {
+      display: none;
+      opacity: 0;
+      transform: translateX(30px);
+      transition: opacity 0.8s ease, transform 0.6s ease;
+    }
+
+    .page.active {
       display: block;
-      width: 60px;
-      height: 4px;
-      background: linear-gradient(90deg, #3498db, #2ecc71);
-      margin: 0.75rem auto;
-      border-radius: 2px;
+      opacity: 1;
+      transform: translateX(0);
     }
 
-    /* === Блоки секций === */
-    section {
-      margin-bottom: 4rem;
+    /* Заголовки страниц */
+    .page h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.8rem;
+      color: var(--deep-blue);
+      text-align: center;
+      margin-bottom: 2.5rem;
+      position: relative;
     }
 
-    /* === Сетка изображений === */
-    .images-grid {
+    .page h2::after {
+      content: '';
+      position: absolute;
+      bottom: -15px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100px;
+      height: 3px;
+      background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    }
+
+    /* Карточки (локации/персонажи) */
+    .cards-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 1.5rem;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 2rem;
       justify-items: center;
     }
 
-    .image-item {
-      position: relative;
-      width: 200px;
-      height: 200px;
-      cursor: pointer;
+    .card {
+      width: 240px;
+      height: 240px;
+      border-radius: 20px;
       overflow: hidden;
-      border-radius: 12px;
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-      transition: transform 0.4s ease, box-shadow 0.4s ease;
- }
-
-    .image-item:hover {
-      transform: translateY(-8px) scale(1.05);
-      box-shadow: 0 16px 30px rgba(0, 0, 0, 0.25);
+      position: relative;
+      cursor: pointer;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.18);
+      transition: all 0.5s ease;
+      background: white;
+      border: 3px solid #f0e6d2;
     }
 
-    .image-item:focus-within {
-      outline: 3px solid #3498db;
-      outline-offset: 2px;
+    .card:hover {
+      transform: translateY(-12px) rotate(2deg);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.25);
+      border-color: var(--gold);
     }
 
-    .image-item img {
+    .card::before {
+      content: '';
+      position: absolute;
+      top: -10px;
+      right: -10px;
+      width: 60px;
+      height: 60px;
+      background: var(--gold);
+      clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+      z-index: -1;
+      opacity: 0.7;
+    }
+
+    .card img {
       width: 100%;
       height: 100%;
       object-fit: cover;
       display: block;
+    }
+
+    .card-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
       transition: opacity 0.4s ease;
     }
 
-    .image-item:hover img {
-      opacity: 0.9;
+    .card:hover .card-overlay {
+      opacity: 1;
     }
 
-    /* === Эффект "играет" при клике === */
-    .image-item.playing::before {
-      content: '▶';
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      font-size: 2.5rem;
+    .card-overlay span {
       color: white;
-      text-shadow: 0 2px 6px(0, 0 0, 0.6);
-      z-index: 2;
-      animation: pulse 1.2s infinite alternate;
+      font-size: 1.4rem;
+      font-weight: bold;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.6);
     }
 
-    @keyframes pulse {
-      from { opacity: 0.7; transform: translate(-50%, -50%) scale(0.9); }
-      to   { opacity: 1;   transform: translate(-50%, -50%) scale(1.1); }
-    }
-
-    /* === Блок сказки === */
-    .story-block {
-      background: rgba(255, 255, 255, 0.85);
-      border-radius: 16px;
-      padding: 2.5rem;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
-      backdrop-filter: blur(8px);
-    }
-
+    /* Сказка */
     .story-content {
-      font-size: 1.1rem;
-      line-height: 1.8;
-      color: #2c3e50;
-      max-width: 800px;
+      font-size: 1.2rem;
+      line-height: 1.9;
+      color: #2c2c47;
+      max-width: 700px;
       margin: 0 auto;
       white-space: pre-line;
-      overflow-x: hidden;
+      padding: 1.5rem;
+      background: rgba(255, 255, 255, 0.7);
+      border-radius: 12px;
+      box-shadow: inset 0 0 15px rgba(0,0,0,0.05);
     }
 
-    . p {
-      margin-bottom: 1.2rem;
+    .story-content p {
+      margin-bottom: 1.4rem;
+      text-indent: 2em;
     }
 
-    /* === Адаптивность === */
+    /* Анимация появления текста */
+    .typewriter {
+      opacity: 0;
+      animation: typewriter 3s steps(40) 1s forwards, fade0.8s ease-out 4s;
+    }
+
+    @keyframes typewriter {
+      from { width: 0; }
+      to { width: 100%; }
+    }
+
+    @keyframes fade-in {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    /* Кнопка управления музыкой */
+    .music-control {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.2);
+      border: 2px solid var(--gold);
+      color: white;
+      font-size: 1.8rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      backdrop-filter: blur(10px);
+      box-shadow: var(--glow);
+      z-index: 50;
+    }
+
+    /* Мобильная адаптация */
     @media (max-width: 768px) {
-      body {
-        padding: 1rem 0;
-        background-size: auto 100%;
+      .sidebar {
+        left: 10px;
+        top: 20px;
+        flex-direction: row;
+        transform: none;
+        width: calc(100% - 20px);
+        overflow-x: auto;
+        padding: 0 10px;
+        scroll-snap-type: x mandatory;
       }
 
-      .container {
-        padding: 0 1rem;
+      .nav-btn {
+        flex-shrink: 0;
+        scroll-snap-align: start;
       }
 
-      h2 {
-        font-size: 1.875rem;
-      }
-
-      .images-grid {
-        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-        gap: 1rem;
-      }
-
-      .image-item {
-        width: 160px;
-        height: 160px;
-      }
-
-      .story-block {
-        padding: 1.75rem;
-      }
-    }
-
-    @media (max-width: 480px) {
-      h2 {
-        font-size: 1.5rem;
-      }
-
-      .images-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .image-item {
-        width: 100%;
-        height: 180px;
-      }
-
-      .story-content {
-        font-size: 1rem;
-      }
-    }
-
-    /* === Темная тема (по запросу браузера) === */
-    @media (prefers-color-scheme: dark) {
-      body {
-        background-color: #121212;
-        color: #e0e0e0;
-        background-image: url('Фон.png');
-        background-blend-mode: overlay;
-      }
-
-      h2 {
-        color: #ecf0f1;
-      }
-
-      section {
-        background: rgba(30, 30, 46, 0.7);
+      .pages {
+        margin-left: 0;
         border-radius: 16px;
-        padding: 1rem;
       }
 
-      .story-block {
-        background: rgba(20, 20, 30, 0.8);
-      }
-
-      .image-item {
-        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
-      }
-
-      .image-item:hover {
-        box-shadow: 0 16px 30px rgba(0, 0, 0, 0.6);
+      .cover-title {
+        font-size: 3rem;
       }
     }
   </style>
@@ -235,233 +343,239 @@
     <source src="Фон.mp3" type="audio/mpeg">
   </audio>
 
-  <!-- Основной контейнер -->
-  <div class="container">
-    
-    <!-- Блок 1: Локации -->
-    <section class="locations-block">
-      <h2>Локации</h2>
-      <div class="images-grid">
-        
-        <div class="image-item" data-audio="л1.mp3">
-          <img src="л1.png" alt="Локация 1">
-        </div>
-        
-        <div class="image-item" data-audio="л2.mp3">
-          <img src="л2.png" alt="Локация 2">
-        </div>
-        
-        <div class="image-item" data-audio="л3.mp3">
-          <img src="л3.png" alt="Локация 3">
-        </div>
-        
-        <div class="image-item" data-audio="л5.mp3">
-          <img src="л5.png" alt="Локация 5">
-        </div>
-        
-      </div>
-    </section>
-
-    <!-- Блок 2: Персонажи -->
-    <section class="characters-block">
-      <h2>Персонажи</h2>
-      <div class="images-grid">
-        
-        <div class="image-item" data-audio="п1.mp3">
-          <img src="п1.png" alt="Персонаж 1">
-        </div>
-        
-        <div class="image-item" data-audio="п2.mp3">
-          <img src="п2.png" alt="Персонаж 2">
-        </div>
-        
-        <div class="image-item" data-audio="п3.mp3">
-          <img src="п3.png" alt="Персонаж 3">
-        </div>
-        
-        <div class="image-item" data-audio="п4.mp3">
-          <img src="п4.png" alt="Персонаж 4">
-        </div>
-        
-        <div class="image-item" data-audio="п5.mp3">
-          <img src="п5.png" alt="Персонаж 5">
-        </div>
-        
-      </div>
-    </section>
-
-    <!-- Блок 3: Сказка -->
-    <section class="story-block">
-      <h2>Наша сказка</h2>
-      <div class="story-content">
-        <p>Загружается...</p>
-      </div>
-    </section>
-
+  <!-- Обложка (появляется при загрузке) -->
+  <div class="book-cover" id="cover">
+    <div class="cover-title">ВОЛШЕБНАЯ КНИГА</div>
   </div>
 
+  <!-- Боковая панель -->
+  <div class="sidebar">
+    <div class="nav-btn" data-page="locations" title="Локации">🌍</div>
+    <div class="nav-btn" data-page="characters" title="Персонажи">👤</div>
+    <div class="nav-btn" data-page="story" title="Сказка">📖</div>
+    <div class="nav-btn" data-page="dialog" title="Диалог">💬</div>
+  </div>
+
+  <!-- Контент -->
+  <div class="container">
+    <div class="pages">
+      <!-- Локации -->
+      <div class="page" id="locations-page">
+        <h2>Мир Локаций</h2>
+        <div class="cards-grid">
+          <div class="card" data-audio="л1.mp3">
+            <img src="л1.png" alt="Локация 1">
+            <div class="card-overlay"><span>▶</span></div>
+          </div>
+          <div class="card" data-audio="л2.mp3">
+            <img src="л2.png" alt="Локация 2">
+            <div class="card-overlay"><span>▶</span></div>
+          </div>
+          <div class="card" data-audio="л3.mp3">
+            <img src="л3.png" alt="Локация 3">
+            <div class="card-overlay"><span>▶</span></div>
+          </div>
+          <div class="card" data-audio="л5.mp3">
+            <img src="л5.png" alt="Локация 5">
+            <div class="card-overlay"><span>▶</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Персонажи -->
+      <div class="page" id="characters-page">
+        <h2>Персонажи Сказки</h2>
+        <div class="cards-grid">
+          <div class="card" data-audio="п1.mp3">
+            <img src="п1.png" alt="Персонаж 1">
+            <div class="card-overlay"><span>▶</span></div>
+          </div>
+          <div class="card" data-audio="п2.mp3">
+            <img src="п2.png" alt="Персонаж 2">
+            <div class="card-overlay"><span>▶</span></div>
+          </div>
+          <div class="card" data-audio="п3.mp3">
+            <img src="п3.png" alt="Персонаж 3">
+            <div class="card-overlay"><span>▶</span></div>
+          </div>
+          <div class="card" data-audio="п4.mp3">
+            <img src="п4.png" alt="Персонаж 4">
+            <div class="card-overlay"><span>▶</span></div>
+          </div>
+          <div class="card" data-audio="п5.mp3">
+            <img src="п5.png" alt="Персонаж 5">
+            <div class="card-overlay"><span>▶</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Сказка -->
+      <div class="page" id="story-page">
+        <h2>Наша Сказка</h2>
+        <div class="story-content typewriter" id="story-text">
+          Загружается...
+        </div>
+      </div>
+
+      <!-- Диалог -->
+      <div class="page" id="dialog-page">
+        <h2>Диалоги</h2>
+        <div class="cards-grid">
+          <div class="card" data-audio="Диалог.mp3">
+            <img src="л1.png" alt="Диалог"> <!-- можно заменить на иконку диалога -->
+            <div class="card-overlay"><span>🗣</span></div>
+          </div>
+        </div>
+        <p style="text-align:center; margin-top:2rem; color:#555;">
+          Нажмите на карточку, чтобы услышать диалог.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Кнопка управления музыкой -->
+  <div class="music-control" id="music-toggle">⏸</div>
+
   <script>
-    // === DOM-элементы ===
+    // === DOM ===
     const bgMusic = document.getElementById('bgMusic');
-    const imageItems = document.querySelectorAll('.image-item');
-    const storyContent = document.querySelector('.story-content');
+    const cover = document.getElementById('cover');
+    const pages = document.querySelectorAll('.page');
+    const navBtns = document.querySelectorAll('.nav-btn');
+    const cards = document.querySelectorAll('.card');
+    const storyText = document.getElementById('story-text');
+    const musicToggle = document.getElementById('music-toggle');
 
-    // === Глобальные переменные ===
-    let currentAudio = null; // текущий проигрываемый аудио (не фоновый)
+    // === State ===
+    let currentAudio = null;
     let isBgMusicPlaying = false;
+    let bgVolumeBackup = 1;
 
-    // === 1. Загрузка текста из Lor.txt ===
+    // === Загрузка сказки (надёжно) ===
     async function loadStory() {
       try {
-        const response = await fetch('Lor.txt');
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        const text = await response.text();
-        storyContent.innerHTML = `<p>${text.replace(/\n/g, '<br>')}</p>`;
+        const resp = await fetch('Lor.txt');
+        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+        let text = await resp.text();
+        // Удалим BOM, если есть
+        if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
+        storyText.textContent = text.trim();
+        storyText.classList.add('typewriter');
       } catch (err) {
-        console.error('Ошибка загрузки сказки:', err);
-        storyContent.innerHTML = `<p>❌ Не удалось загрузить сказку.</p>`;
+        console.error('Ошибка загрузки Lor.txt:', err);
+        storyText.innerHTML = `<p style="color:#c00;">⚠ Сказка не найдена. Проверьте файл <code>Lor.txt</code> в репозитории.</p>`;
+        storyText.classList.remove('typewriter');
       }
     }
 
-    // === 2. Функция для воспроизведения аудио по клику ===
-    function playSoundForItem(item) {
-      // Останавливаем предыдущий трек (если есть и он не фоновый)
-      if (currentAudio && currentAudio !== bgMusic) {
+    // === Воспроизведение звука с затуханием фона ===
+    function playSound(audioUrl, element) {
+      // Запоминаем громкость фона
+      bgVolumeBackup = bgMusic.volume;
+      
+      // Затихаем фон до 20%
+      bgMusic.volume = 0.2;
+      isBgMusicPlaying = true;
+
+      // Останавливаем предыдущий трек
+      ifcurrentAudio) {
         currentAudio.pause();
         currentAudio.currentTime = 0;
-
-        // Убираем класс playing с предыдущего элемента
-        const prevItem = document.querySelector('[data-playing="true"]');
-        if (prevItem) {
-          prevItem.classList.remove('playing');
-          prevItem.setAttribute('data-playing', 'false');
-        }
       }
 
-      const audioUrl = item.dataset.audio;
-      if (!audioUrl) return;
-
-      // Устанавливаем состояние "играет"
-      item.classList.add('playing');
-      item.setAttribute('data-playing', 'true');
-
-      // Создаём новый аудио-объект
+      // Воспроизводим новый
       const audio = new Audio(audioUrl);
       currentAudio = audio;
 
-      // Обработка окончания воспроизведения
       audio.addEventListener('ended', () => {
-        item.classList.remove('playing');
-        item.setAttribute-playing', 'false');
-        if (currentAudio === audio) {
-          currentAudio = null;
-        }
-      });
-
-      // Обработка ошибок
-      audio.addEventListener('error', (e) => {
-        console.error('Ошибка аудио:', audioUrl, e);
-        item.classList.remove('playing');
-        item.setAttribute('data-playing', 'false');
+        // Восстанавливаем громкость фона
+        bgMusic.volume = bgVolumeBackup;
         currentAudio = null;
       });
 
-      // Попытка воспроизвести
-      audio.play()
-        .then(() => {
-          console.log('Воспроизводим:', audioUrl);
-        })
-        .catch((err) => {
-          console.warn('Автовоспроизведение заблокировано:', err);
-          item.classList.remove('playing');
-          item.setAttribute('data-playing', 'false');
-          currentAudio = null;
-          alert('Нажмите ещё раз для воспроизведения (требуется взаимодействие пользователя).');
-        });
+      audio.addEventListener('error', (e) => {
+        console.error('Ошибка аудио:', audioUrl, e);
+        bgMusic.volume = bgVolumeBackup;
+        currentAudio = null;
+      });
+
+      audio.play().catch(e => {
+        console.warn('Автовоспроизведение заблокировано:', e);
+        bgMusic.volume = bgVolumeBackup;
+        alert('Нажмите ещё раз — требуется взаимодействие пользователя.');
+      });
     }
 
-    // === 3. Управление фоновой музыкой ===
-    function toggleBackgroundMusic() {
-      if (isBgMusicPlaying) {
-        bgMusic.pause();
-        isBgMusicPlaying = false;
-        document.getElementById('music-toggle-btn').textContent = '▶ Запустить';
-      } else {
-        bgMusic.play()
-          .then(() => {
-            isBgMusicPlaying = true;
-            document.getElementById('music-toggle-btn').textContent = '⏸ Пауза';
-          })
-          .catch(err => {
-            console.warn('Не удалось запустить фоновую музыку:', err);
-            alert('Нажмите кнопку ещё раз для запуска фоновой музыки.');
-          });
-      }
+    // === Переключение страниц ===
+    function showPage(pageId) {
+      pages.forEach(p => p.classList.remove('active'));
+      document.getElementById(`${pageId}-page`).classList.add('active');
+
+      navBtns.forEach(btn => btn.classList.remove('active'));
+      document.querySelector(`[data-page="${pageId}"]`).classList.add('active');
     }
 
-    // === 4. Кнопка управления фоновой музыкой ===
-    function createMusicToggleButton() {
-      if (document.getElementById('music-toggle-btn')) return;
-
-      const btn = document.createElement('button');
-      btn.id = 'music-toggle-btn';
-      btn.textContent = '⏸ Пауза';
-      btn.style.position = 'fixed';
-      btn.style.bottom = '20px';
-      btn.style.right = '20px';
-      btn.style.zIndex = '1000';
-      btn.style.padding = '12px 20px';
-      btn.style.fontSize = '1rem';
-      btn.style = '#3498db';
-      btn.style.color = 'white';
-      btn.style.border = 'none';
-      btn.style.borderRadius = '8px';
-      btn.style.cursor = 'pointer';
-      btn.style.boxShadow = '0 4px 10px rgba(0,0,0,0.      btn.title = 'Пауза / Воспроизведение фоновой музыки';
-
-      btn.addEventListener('click', toggleBackgroundMusic);
-
-      document.body.appendChild(btn);
-    }
-
-    // === 5. Инициализация ===
+    // === Инициализация ===
     document.addEventListener('DOMContentLoaded', () => {
+      // Скрыть обложку через 2.5 сек
+      setTimeout(() => {
+        cover.classList.add('hidden');
+      }, 2500);
+
+      // Загрузить сказку
       loadStory();
 
-      // Привязка кликов к изображениям
-      imageItems.forEach(item => {
-        item.addEventListener('click', () => {
-          playSoundForItem(item);
+      // Навигация
+      navBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          const pageId = btn.dataset.page;
+          showPage(pageId);
         });
       });
 
-      // Создаём кнопку управления
-      createMusicToggleButton();
-
-      // Пытаемся запустить фоновую музыку сразу
-      bgMusic.play()
-        .then(() => {
-          isBgMusicPlaying = true;
-          document.getElementById('music-toggle-btn').textContent = '⏸ Пауза';
-        })
-        .catch(() => {
-          // Если не получилось — оставляем кнопку как есть
+      // Клик по карточкам
+      cards.forEach(card => {
+        card.addEventListener('click', () => {
+          const audioUrl = card.dataset.audio;
+          if (audioUrl) {
+            playSound(audioUrl, card);
+            // Визуальный фидбэк
+            card.style.transform = 'scale(0.95)';
+            setTimeout(() => {
+              card.style.transform = '';
+            }, 200);
+          }
         });
+      });
 
-      // Для мобильных: при первом взаимодействии пробуем запустить фоновую музыку
-      let firstInteraction = false;
-      const handleFirstInteraction = () => {
-        if (!firstInteraction && !isBgMusicPlaying) {
-          firstInteraction = true;
+      // Кнопка управления музыкой
+      musicToggle.addEventListener('click', () => {
+        if (isBgMusicPlaying) {
+          bgMusic.pause();
+          isBgMusicPlaying = false;
+          musicToggle.textContent = '▶';
+        } else {
           bgMusic.play().then(() => {
             isBgMusicPlaying = true;
-            document.getElementById('music-toggle-btn').textContent = '⏸ Пауза';
-          }).catch(() => {});
+            musicToggle.textContent = '⏸';
+          }).catch(() => {
+            alert('Нажмите на любую картинку для разблокировки звука.');
+          });
+        }
+      });
+
+      // Автозапуск фона (после взаимодействия)
+      let firstInteraction = false;
+      const handleFirst = () => {
+        if (!firstInteraction) {
+          firstInteraction = true;
+          bgMusic.volume = 0.7;
+          bgMusic.play().catch(() => {});
         }
       };
 
-      document.addEventListener('click', handleFirstInteraction, { once: true });
-      document.addEventListener('touchstart', handleFirstInteraction, { once: true });
+      document.addEventListener('click', handleFirst, { once: true });
+      document.addEventListener('touchstart', handleFirst, { once: true });
     });
   </script>
 </body>
