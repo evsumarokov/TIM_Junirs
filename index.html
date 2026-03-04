@@ -322,6 +322,23 @@
         const mainContainer = document.getElementById('mainContainer');
         const musicToggle = document.getElementById('musicToggle');
         const dialogBtn = document.getElementById('dialogBtn');
+        const storyContent = document.querySelector('.story-content');
+
+        // ===== ЗАГРУЗКА ТЕКСТА СКАЗКИ ИЗ ФАЙЛА =====
+        async function loadStoryText() {
+            try {
+                const response = await fetch('https://evsumarokov.github.io/TIM_Junirs/Lor.txt');
+                if (!response.ok) {
+                    throw new Error('Файл не найден');
+                }
+                const text = await response.text();
+                // Преобразуем переносы строк в HTML
+                storyContent.innerHTML = text.replace(/\n\n/g, '</p><p>').replace(/\n/g, '<br>');
+            } catch (error) {
+                console.error('Ошибка загрузки текста:', error);
+                storyContent.innerHTML = '<p>⚠️ Текст сказки загружается... Если не появился, проверьте файл Lor.txt</p>';
+            }
+        }
 
         // ===== СТАРТОВОЕ ВОСПРОИЗВЕДЕНИЕ =====
         startButton.addEventListener('click', function() {
@@ -329,6 +346,10 @@
             setTimeout(() => { startScreen.style.display = 'none'; }, 500);
             controls.style.display = 'flex';
             mainContainer.style.display = 'block';
+            
+            // Загружаем текст сказки
+            loadStoryText();
+            
             bgMusic.play().then(() => {
                 isMusicPlaying = true;
                 musicToggle.classList.add('playing');
