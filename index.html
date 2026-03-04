@@ -273,7 +273,7 @@
     /* Анимация появления текста */
     .typewriter {
       opacity: 0;
-      animation: typewriter 3s steps(40) 1s forwards, fade0.8s ease-out 4s;
+      animation: typewriter 3s steps(40) 1s forwards, fade-in 0.8s ease-out 4s;
     }
 
     @keyframes typewriter {
@@ -478,7 +478,7 @@
       isBgMusicPlaying = true;
 
       // Останавливаем предыдущий трек
-      ifcurrentAudio) {
+      if (currentAudio) {
         currentAudio.pause();
         currentAudio.currentTime = 0;
       }
